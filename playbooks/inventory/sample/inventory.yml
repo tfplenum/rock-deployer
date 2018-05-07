@@ -7,14 +7,20 @@
 
 all:
   vars:
-    gateway: # Ip Address of Gateway
-    netmask: # Network Mask of Subnet
+    default_boot_drive: # sda
+    dhcp: # Set to "true" to enable DHCP.    
+    dhcp_start: #DHCP range start address    
+    dhcp_end: #DHCP range end address
+    dhcp_mask: '{{ ansible_default_ipv4.netmask }}'
+    dhcp_net: '{{ ansible_default_ipv4.network }}'
     dns: # Ip Address to DNS Server
+    gateway: # Ip Address of Gateway
+    iso_pth: # Path to iso /root/rhel-atomic-installer-7.5.0-1.x86_64.iso
+    kick_media: # use one of the following: rhel, centos, or atomic
+    kick_srvr: '{{ ansible_default_ipv4.address }}'
+    netmask: # Network Mask of Subnet
     root_password: #"password"
     timezone: #"America/Chicago"
-    kick_media: # rhel, centos, or atomic
-    iso_pth: # Path to iso /root/rhel-atomic-installer-7.5.0-1.x86_64.iso
-    default_boot_drive: # sda
   children:
     nodes:
       children:

@@ -4,36 +4,41 @@ auth --enableshadow --passalgo=sha512
 # OSTree setup
 ostreesetup --osname="rhel-atomic-host" --remote="rhel-atomic-host-ostree" --url="file:///install/ostree" --ref="rhel-atomic-host/7/x86_64/standard" --nogpg
 # Use graphical install
-graphical
+text
 # Firewall configuration
 firewall --use-system-defaults
-# Run the Setup Agent on first boot
-firstboot --enable
-ignoredisk --only-use=sda
+firstboot --disable
+ignoredisk --only-use={% if item is defined %}{{ hostvars[item].boot_drive }}{% else %}{{ default_boot_drive }}{% endif %}
 # Keyboard layouts
 keyboard --vckeymap=us --xlayouts='us'
 # System language
 lang en_US.UTF-8
+eula --agreed
+
+#Reboot when its all over
+reboot
 
 # Network information
-network  --bootproto=dhcp --device=ens33 --ipv6=auto --activate
+{% if item is defined %}
+network --bootproto=static --ip={{ hostvars[item].ip }} --netmask={{ netmask }} --gateway={{ gateway }} --nameserver={{ dns }} --noipv6 --activate
+network  --hostname={{ item }}
+{% else %}
+network  --bootproto=dhcp --device=eth0 --noipv6 --activate
 network  --hostname=localhost.localdomain
+{% endif %}
 
 # Root password
-rootpw --iscrypted $6$S7WjDbScUogX31qD$DbmCqIkB.M0tw/se.Qx2/Y6bT8TkK/zxpIg4DJWFiiG62uJHPtPRIaVwd0FVfy6ImE0gAd0BdIaPC.RUbnUvL0
+rootpw --iscrypted {{ rootpw.stdout }}
 # System services
 services --disabled="cloud-init,cloud-config,cloud-final,cloud-init-local" --enabled="chronyd"
 # System timezone
-timezone America/New_York --isUtc
+timezone {{ timezone }} --isUtc
 # System bootloader configuration
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive={% if item is defined %}{{ hostvars[item].boot_drive }}{% else %}{{ default_boot_drive }}{% endif %}
 # Partition clearing information
-clearpart --all --initlabel --drives=sda
+clearpart --all --initlabel
 # Disk partitioning information
-part /boot --fstype="xfs" --ondisk=sda --size=300
-part pv.203 --fstype="lvmpv" --ondisk=sda --size=9939
-volgroup rhelah --pesize=4096 pv.203
-logvol /  --fstype="xfs" --size=9936 --name=root --vgname=rhelah
+autopart --type=lvm
 
 %post --erroronfail
 cp /etc/skel/.bash* /var/roothome

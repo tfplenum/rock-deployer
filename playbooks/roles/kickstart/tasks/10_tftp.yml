@@ -34,8 +34,7 @@
         mode: 0644
         setype: "{{ item.setype }}"
       register: tftp
-      with_items:
-      #- { src: 'default.j2', dest: '{{ tftp_dir }}/pxelinux.cfg/default', setype: 'cobbler_var_lib_t'}
+      with_items:      
       - { src: 'tftp.j2', dest: '/etc/xinetd.d/tftp', setype: 'etc_t'}
 
     - name: TFTP Services

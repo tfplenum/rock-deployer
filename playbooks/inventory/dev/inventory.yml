@@ -7,14 +7,20 @@
 
 all:
   vars:
-    gateway: 192.168.122.2
-    netmask: 255.255.255.0
-    dns: 192.168.86.20
+    default_boot_drive: sda
+    dhcp: true    
+    dhcp_start: 192.168.122.158    
+    dhcp_end: 192.168.122.168
+    dhcp_mask: '{{ ansible_default_ipv4.netmask }}'
+    dhcp_net: '{{ ansible_default_ipv4.network }}'
+    dns: 192.168.122.7
+    gateway: 192.168.122.2  
+    iso_pth: /root/rhel-atomic-installer-7.5.0-1.x86_64.iso
+    kick_media: rhel
+    kick_srvr: '{{ ansible_default_ipv4.address }}'    
+    netmask: 255.255.255.0    
     root_password: "password"
     timezone: "America/Chicago"
-    kick_media: atomic
-    iso_pth: /root/rhel-atomic-installer-7.5.0-1.x86_64.iso
-    default_boot_drive: sda
   children:
     nodes:
       children:
@@ -38,5 +44,5 @@ all:
               boot_drive: sda
             rockserver3.lan:
               ip: 192.168.122.10
-              mac: 00:50:56:2C:4E:E0
+              mac: 00:50:56:29:0A:6E
               boot_drive: sda

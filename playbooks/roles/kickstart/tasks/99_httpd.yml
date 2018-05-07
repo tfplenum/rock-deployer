@@ -1,0 +1,42 @@
+---
+- name: Configure web server
+  block:
+    - name: Install packages
+      yum:
+        name: "{{ apache }}"
+        state: latest
+    
+    - name: Create directory for {{ kick_media }}
+      file:
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+        setype: httpd_sys_content_t
+        path: "{{ item }}"
+      with_items:
+      - "{{ web_root }}/{{ kick_media }}"
+
+    - name: Copy content to {{ web_root }}/{{ kick_media }}
+      delegate_to: "{{ inventory_hostname }}"
+      synchronize:
+        dest: "{{ item }}"
+        src:  "{{ mnt_pth }}/"
+        recursive: yes
+      with_items: 
+      - "{{ web_root }}/{{ kick_media }}/"  
+    
+    - name: Start the {{ apache }} service
+      service:
+        name: "{{ apache }}"
+        state: started
+        enabled: true
+
+    - name: Configure the firewall
+      firewalld:
+        service: http
+        immediate: yes
+        permanent: yes
+        state: enabled
+  when:
+  - kick_media != ""

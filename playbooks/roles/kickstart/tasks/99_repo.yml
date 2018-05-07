@@ -1,0 +1,26 @@
+---
+- name: Mount content to {{ mnt_pth }}
+  mount:
+    fstype: iso9660
+    state: mounted
+    opts: loop
+    path: "{{ mnt_pth }}"
+    src: "{{ iso_pth }}"
+  when:
+    - mnt_pth != ""  
+    - iso_pth != ""  
+  register: mounted
+
+- name: Create repo from local media
+  yum_repository:
+    baseurl: "file://{{ mnt_pth }}"
+    description: Local Media Repo
+    name: "{{ reponame }}"
+    enabled: yes
+    gpgcheck: no
+  when: mounted is succeeded
+
+- name: Install extra_packages
+  yum:
+    name: "{{ xtras }}"
+    state: latest

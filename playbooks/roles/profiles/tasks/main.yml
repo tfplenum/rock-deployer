@@ -1,0 +1,56 @@
+---
+
+- name: Generate RootPw
+  command: "openssl passwd -1 {{ root_password }}"
+  register: rootpw
+
+- name: Make {{ kick_cfg }} avail
+  template:
+    src: ks.cfg.j2
+    dest: "{{ web_root }}/ks.cfg"
+    owner: root
+    group: root
+    mode: 0644
+    setype: httpd_sys_content_t
+
+- name: Default pxe menu
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+    setype: "{{ item.setype }}"
+  register: tftp
+  with_items:
+  - { src: 'default.j2', dest: '{{ tftp_dir }}/pxelinux.cfg/default', setype: 'cobbler_var_lib_t'}
+
+- debug:
+    msg: "{{ hostvars[item].mac }}"
+  with_items:
+  - "{{ groups['servers'] }}"
+
+
+- name: Create pxe menu for each server
+  template:
+    src: "default.j2"
+    dest: "{{ tftp_dir }}/pxelinux.cfg/01-{{ hostvars[item].mac | regex_replace(':', '-') | lower }}"
+    owner: root
+    group: root
+    mode: 0644
+    setype: "cobbler_var_lib_t"
+  register: tftp
+  with_items:
+  - "{{ groups['servers'] }}"
+
+
+- name: Create ks for each server
+  template:
+    src: "ks.cfg.j2"
+    dest: "{{ web_root }}/{{ item }}.cfg"
+    owner: root
+    group: root
+    mode: 0644
+    setype: httpd_sys_content_t
+  with_items:
+  - "{{ groups['servers'] }}"

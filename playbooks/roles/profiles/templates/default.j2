@@ -1,0 +1,8 @@
+default vesamenu.c32
+timeout 1
+prompt 0 
+
+label {{ kick_media }}
+  menu label {{ kick_media }}
+  kernel vmlinuz
+  append ks=http://{{ kick_srvr }}/{% if item is defined %}{{ item }}.cfg{% else %}{{ kick_cfg }}{% endif %} initrd=initrd.img net.ifnames=0

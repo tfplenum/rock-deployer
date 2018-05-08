@@ -5,14 +5,18 @@
 # We follow the guidance to include naming conventions there.
 
 ---
+- name: Setup DNS Server
+  hosts: localhost
+  roles:
+    - { role: dnsmasq, tags: ['dnsmasq','dns'] }
 
 - name: Setup Kickstart server
   hosts: localhost
   roles:
-    - { role: kickstart }
+    - { role: kickstart, tags: kickstart }
 
 - name: Generate Profiles
   hosts: localhost
   roles:
-    - { role: profiles, tags: profiles }
+    - { role: profiles, tags: ['profiles', 'profile'] }
 ...

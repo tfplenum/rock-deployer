@@ -1,34 +1,6 @@
+%YAML 1.1
 ---
-kick_cfg: ks.cfg
-tftp_dir: /var/lib/tftpboot
-web_root: /var/www/html
-
-# TFPlenum
-version: 3.0
-online_install: true
-debug_enabled: true
-install_user: root
-install_group: root
-rocknsm_dir: /opt/rockdir/
-install_dir: /opt/rock
-sysctl_file: /etc/sysctl.d/rock.conf
-fqdn: default.svc.cluster.local
-
-#EPEL
-epel_repo_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
-epel_repo_gpg_key_url: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
-epel_repofile_path: "/etc/yum.repos.d/epel.repo"
-
-rocknsm_baseurl: 'https://copr-be.cloud.fedoraproject.org/results/@rocknsm/rocknsm-2.1/epel-7-$basearch/'
-rocknsm_gpgurl: 'https://copr-be.cloud.fedoraproject.org/results/@rocknsm/rocknsm-2.1/pubkey.gpg'
-
-kube_baseurl: "https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64"
-kubernetes_conf_file: /etc/kubernetes/admin.conf
-kube_dir: "{{ install_dir }}/kubernetes"
-kube_version: "1.9.3"
-
-#Harbor
-harbor_ver: '1.4.0'
+#### repo configuration variables ####
 
 bootstrap_package_names:
   - yum-utils
@@ -57,4 +29,3 @@ direct_download_package_names:
 
 pip_downloads:
   - docker-py
-...

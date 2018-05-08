@@ -10,6 +10,11 @@
   roles:
     - { role: dnsmasq, tags: ['dnsmasq','dns'] }
 
+- name: Clone and create repositories
+  hosts: localhost
+  roles:
+    - { role : clonerepo, tags: clonerepo }
+
 - name: Setup Kickstart server
   hosts: localhost
   roles:
@@ -19,4 +24,6 @@
   hosts: localhost
   roles:
     - { role: profiles, tags: ['profiles', 'profile'] }
+
+
 ...

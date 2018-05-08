@@ -1,0 +1,43 @@
+---
+# defaults file for roles/kickstart
+#
+tftp_pkgs: tftp-server,syslinux,xinetd
+tftp_pxe: 
+ - /usr/share/syslinux/pxelinux.0 
+ - /usr/share/syslinux/vesamenu.c32
+ - /mnt/isolinux/initrd.img
+ - /mnt/isolinux/vmlinuz
+apache: httpd
+reponame: localrepo
+
+#Settable variables
+#Path where iso is to be mounted ex: /mnt
+mnt_pth: /mnt
+
+#Absolute path to .iso file
+#iso_pth: /root/rhel-server-7.4-x86_64-dvd.iso
+iso_pth: /root/rhel.iso
+
+#Remove the iso from the system? Override to "true" to keep.
+keep_iso: true
+
+#Keep local yum repo or delete it? Override to "true" to keep.
+keep_repo: true
+
+#Keep iso mounted? Override to "true" to keep.
+keep_mnt: true
+
+#Comma separated list of packages to install
+xtras: rsync,policycoreutils-python
+
+#DHCP range start address
+dhcp_start: 192.168.122.155
+
+#DHCP range end address
+dhcp_end: 192.168.122.165
+
+# Set to "true" to enable DHCP.
+dhcp: true
+
+# Default cleanup set to false
+cleanup: false

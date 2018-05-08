@@ -1,0 +1,60 @@
+#version=DEVEL
+# System authorization information
+auth --enableshadow --passalgo=sha512
+# Use CDROM installation media
+url --url http://{{ kick_srvr }}/{{ kick_media }}
+text
+# Run the Setup Agent on first boot
+firstboot --disable
+ignoredisk --only-use={% if item is defined %}{{ hostvars[item].boot_drive }}{% else %}{{ default_boot_drive }}{% endif %}
+# Keyboard layouts
+keyboard --vckeymap=us --xlayouts='us'
+# System language
+lang en_US.UTF-8
+# Disable Firewalld
+firewall --disabled
+# Disable SELinux
+selinux --disabled
+eula --agreed
+
+#Reboot when its all over
+reboot
+
+# Network information
+{% if item is defined %}
+network --bootproto=static --ip={{ hostvars[item].ip }} --netmask={{ netmask }} --gateway={{ gateway }} --nameserver={{ dns }} --noipv6 --activate
+network  --hostname={{ item }}
+{% else %}
+network  --bootproto=dhcp --device=eth0 --noipv6 --activate
+network  --hostname=localhost.localdomain
+{% endif %}
+
+
+# Root password
+rootpw --iscrypted {{ rootpw.stdout }}
+# System services
+services --disabled="chronyd"
+# System timezone
+timezone {{ timezone }} --isUtc --nontp
+# System bootloader configuration
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive={% if item is defined %}{{ hostvars[item].boot_drive }}{% else %}{{ default_boot_drive }}{% endif %}
+
+# Partition clearing information
+zerombr
+clearpart --all --initlabel
+part /boot --fstype="xfs" --size=500
+part pv.01 --size=1 --grow
+volgroup vg01 pv.01
+logvol /  --fstype="xfs" --size=1 --name=root --vgname=vg01 --grow
+
+%packages
+@^minimal
+@core
+kexec-tools
+
+%end
+
+%post
+/usr/sbin/grubby --update-kernel=ALL --args=console=ttyS0
+
+%end

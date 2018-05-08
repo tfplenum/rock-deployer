@@ -1,0 +1,36 @@
+---
+# The inventory defines which hosts belong to which groups and what variables are applied to them. The playbooks
+# themselves in our scheme do not define any variables. The names you see on the far left here correspond to the limit
+# function you can run with the ansible-playbook command. For example ansible-playbook site.yml --limit sensor would
+# look at this inventory file and see the hosts that are part of the sensor group. When site.yml imports the sensors.yml
+# file, sensor.yml will only apply itself to the servers listed in the sensors group in this inventory file.
+
+all:
+  vars:
+    default_boot_drive: # sda
+    dnsmasq: true
+    dhcp: # Set to "true" to enable DHCP.    
+    dhcp_start: #DHCP range start address    
+    dhcp_end: #DHCP range end address
+    dhcp_mask: '{{ ansible_default_ipv4.netmask }}'
+    dhcp_net: '{{ ansible_default_ipv4.network }}'
+    dns: # Ip Address to DNS Server
+    gateway: # Ip Address of Gateway
+
+    # iso_path and kick media need to be changed based on the source iso used.
+    iso_pth: # Path to iso /root/rhel-atomic-installer-7.5.0-1.x86_64.iso
+    kick_media: # use one of the following: rhel, centos, or atomic
+    
+    kick_srvr: '{{ ansible_default_ipv4.address }}'
+    netmask: # Network Mask of Subnet
+    root_password: #"password"
+    timezone: #"America/Chicago"
+  children:
+    nodes:
+      children:
+        servers:
+          hosts:
+            rockserver1.lan:
+              ip: #192.168.122.10
+              mac: #00:50:56:2C:4E:E0
+              boot_drive: #sda

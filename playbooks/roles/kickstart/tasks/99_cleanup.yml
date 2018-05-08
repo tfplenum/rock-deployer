@@ -1,0 +1,20 @@
+---
+- name: Remove unnecessary media from system
+  block:
+    - name: unmount iso
+      mount:
+        path: "{{ mnt_pth }}"
+        state: unmounted
+      when: keep_mnt != true
+
+    - name: remove iso
+      file:
+        path: "{{ iso_pth }}"
+        state: absent
+      when: keep_iso != true
+
+    - name: remove_repo
+      file:
+        path: "/etc/yum.repos.d/{{ reponame }}.repo"
+        state: absent
+      when: keep_repo != true

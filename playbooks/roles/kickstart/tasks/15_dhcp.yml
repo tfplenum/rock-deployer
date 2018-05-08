@@ -1,0 +1,27 @@
+# Configure dhcp service
+---
+- name: Configure DHCP
+  block:
+    - name: Install dhcp package
+      yum:
+        name: dhcp
+        state: latest
+    
+    - name: dhcpd template
+      template:
+        src: dhcpd.conf.j2
+        dest: /etc/dhcp/dhcpd.conf
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: dhcp service
+      service:
+        name: dhcpd
+        state: started
+        enabled: yes
+
+  when: 
+    - dhcp
+    - dhcp_start != ""
+    - dhcp_end != ""

@@ -1,0 +1,8 @@
+allow booting;
+allow bootp;
+
+subnet {{ dhcp_net }} netmask {{ dhcp_mask }} {
+  range {{ dhcp_start }} {{ dhcp_end }};
+  next-server {{ kick_srvr }};
+  filename "pxelinux.0";
+}

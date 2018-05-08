@@ -1,0 +1,23 @@
+%YAML 1.1
+---
+
+#### Harbor configuration variables ####
+harbor_port: '80'
+harbor_firewall_port: '81'
+harbor_docker_images:
+  - 'tfplenum/bro'
+  - 'docker.elastic.co/elasticsearch/elasticsearch:{{ elastic_ver }}'
+  - "prodian0013/tfplenum-kafka"
+  - 'docker.elastic.co/kibana/kibana:{{ elastic_ver }}'
+  - "docker.elastic.co/logstash/logstash:{{ elastic_ver }}"
+  - 'tfplenum/moloch'
+  - 'tfplenum/suricata'
+harbor_docker_image_names:
+  - 'bro'
+  - 'elasticsearch:{{ elastic_ver }}'
+  - "tfplenum-kafka"
+  - 'kibana:{{ elastic_ver }}'
+  - "logstash:{{ elastic_ver }}"
+  - 'moloch'
+  - 'suricata'
+

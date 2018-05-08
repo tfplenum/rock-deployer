@@ -57,10 +57,10 @@
   with_items:
     - "{{ direct_download_package_names }}"
 
-- name: "Mirror specified repositories"
-  shell: "reposync --repoid={{ item }} --download_path={{ rocknsm_dir }}offlinerepo --download-metadata --downloadcomps"
-  with_items:
-    - "{{ repo_names }}"
+#- name: "Mirror specified repositories"
+#  shell: "reposync --repoid={{ item }} --download_path={{ rocknsm_dir }}offlinerepo --download-metadata --downloadcomps"
+#  with_items:
+#    - "{{ repo_names }}"
 
 - name: "Establish the local repo as a repository"
   shell: "createrepo {{ rocknsm_dir }}offlinerepo"

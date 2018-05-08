@@ -15,6 +15,11 @@
   roles:
     - { role : clonerepo, tags: clonerepo }
 
+- name: Install and run Harbor
+  hosts: localhost
+  roles:
+    - { role: harbor, tags: harbor }
+
 - name: Setup Kickstart server
   hosts: localhost
   roles:

@@ -1,0 +1,135 @@
+#######################################################
+###################  Harbor Install ###################
+#######################################################
+---
+- name: "Create directory for harbor"
+  file:
+    path: "{{ rocknsm_dir }}harbor"
+    state: directory
+    mode: 0740
+
+- name: "Install Docker"
+  yum:
+    name: "{{item}}"
+    state: installed
+  with_items:
+    - docker
+    - python-pip
+
+- name: "pip docker-py"
+  shell: "pip install --trusted-host reposerver --no-index --find-links=http://localhost/offlinerepo/ docker-py"
+
+- name: 'Insecured Registry'
+  replace:
+    path: /etc/docker/daemon.json
+    regexp: '\{\}'
+    replace: '{\n\t"insecure-registries" : ["https://localhost:81","localhost:81"]\n}'
+
+- name: "Restart Docker"
+  systemd:
+    name: docker
+    enabled: yes
+    state: restarted
+
+- name: "Download Harbor {{ harbor_ver }} build"
+  unarchive:
+    src: "http://localhost/offlinerepo/harbor-online-installer-v{{ harbor_ver }}.tgz"
+    dest: "{{ rocknsm_dir }}harbor"
+    mode: 0740
+    remote_src: true
+
+- name: "Download docker-compose 1.21.0"
+  get_url:
+    url: "http://localhost/offlinerepo/docker-compose-Linux-x86_64"
+    dest: "/usr/bin/docker-compose"
+    mode: 0740
+
+- name: 'Fix Harbor config'
+  block:
+   - name: 'Set up harbor.cfg'
+     replace:
+        path: "{{ rocknsm_dir }}harbor/harbor.cfg"
+        regexp: '(\s+)hostname = reg\.mydomain\.com(\s+.*)?$'
+        replace: '\1hostname = {{ rock_hostname }}:{{ harbor_firewall_port }}\2'
+   - replace:
+        path: "{{ rocknsm_dir }}harbor/harbor.cfg"
+        regexp: '(\s+)db_password = root123(\s+.*)?$'
+        replace: '\1db_password = password\2'
+   - replace:
+        path: "{{ rocknsm_dir }}harbor/harbor.cfg"
+        regexp: '(\s+)harbor_admin_password = Harbor12345(\s+.*)?$'
+        replace: '\1harbor_admin_password = password\2'
+
+- name: 'Fix Harbor docker-compose file'
+  replace:
+    path: "{{ rocknsm_dir }}harbor/docker-compose.yml"
+    regexp: '80:80'
+    replace: '{{ harbor_firewall_port }}:{{ harbor_port }}'
+
+# Depending on the OS there may already be a httpd running
+- name: 'Check if pre-existing httpd service exists'
+  stat: 'path=/etc/init.d/httpd'
+  register: 'service_status'
+
+#- name: 'Disable local http server'
+#  service:
+#    name: 'httpd'
+#    enabled: no
+#    state: 'stopped'
+#  when: 'service_status.stat.exists'
+
+- name: 'Install Harbor'
+  shell: "sh {{ rocknsm_dir }}harbor/install.sh"
+
+- name: 'Install Harbor service file'
+  template:
+    backup: yes
+    src: 'harbor.service.j2'
+    dest: '/etc/systemd/system/harbor.service'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: 'Enable harbor service'
+  systemd:
+    name: 'harbor'
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+- name: 'Wait for harbor to come up'
+  uri:
+    url: http://ansiblecontroller:81
+  register: harborwebresult
+  until: harborwebresult.status == 200
+  retries: 15
+  delay: 1
+
+- name: 'Download docker container images'
+  docker_image:
+    name: "{{item}}"
+  with_items:
+    - "{{harbor_docker_images}}"
+
+- name: 'Login to harbor'
+  docker_login:
+    username: admin
+    password: password
+    registry_url: http://ansiblecontroller:81
+    timeout: 20
+
+- name: 'Tag local images for upload to harbor'
+  shell: "docker tag {{ item.0 }} ansiblecontroller:81/library/{{ item.1 }}"
+  with_together:
+    - "{{harbor_docker_images}}"
+    - "{{harbor_docker_image_names}}"
+
+- name: 'Upload local images to harbor'
+  docker_image:
+    name: "ansiblecontroller:81/library/{{ item }}"
+    push: yes
+    pull: no
+  with_items:
+    - "{{harbor_docker_image_names}}"
+
+...

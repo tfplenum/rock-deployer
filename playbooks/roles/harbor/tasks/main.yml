@@ -48,21 +48,21 @@
   block:
    - name: 'Set up harbor.cfg'
      replace:
-        path: "{{ rocknsm_dir }}harbor/harbor.cfg"
+        path: "{{ rocknsm_dir }}harbor/harbor/harbor.cfg"
         regexp: '(\s+)hostname = reg\.mydomain\.com(\s+.*)?$'
         replace: '\1hostname = {{ rock_hostname }}:{{ harbor_firewall_port }}\2'
    - replace:
-        path: "{{ rocknsm_dir }}harbor/harbor.cfg"
+        path: "{{ rocknsm_dir }}harbor/harbor/harbor.cfg"
         regexp: '(\s+)db_password = root123(\s+.*)?$'
         replace: '\1db_password = password\2'
    - replace:
-        path: "{{ rocknsm_dir }}harbor/harbor.cfg"
+        path: "{{ rocknsm_dir }}harbor/harbor/harbor.cfg"
         regexp: '(\s+)harbor_admin_password = Harbor12345(\s+.*)?$'
         replace: '\1harbor_admin_password = password\2'
 
 - name: 'Fix Harbor docker-compose file'
   replace:
-    path: "{{ rocknsm_dir }}harbor/docker-compose.yml"
+    path: "{{ rocknsm_dir }}harbor/harbor/docker-compose.yml"
     regexp: '80:80'
     replace: '{{ harbor_firewall_port }}:{{ harbor_port }}'
 
@@ -79,7 +79,7 @@
 #  when: 'service_status.stat.exists'
 
 - name: 'Install Harbor'
-  shell: "sh {{ rocknsm_dir }}harbor/install.sh"
+  shell: "sh {{ rocknsm_dir }}harbor/harbor/install.sh"
 
 - name: 'Install Harbor service file'
   template:
@@ -99,7 +99,7 @@
 
 - name: 'Wait for harbor to come up'
   uri:
-    url: http://ansiblecontroller:81
+    url: http://localhost:81
   register: harborwebresult
   until: harborwebresult.status == 200
   retries: 15
@@ -115,18 +115,18 @@
   docker_login:
     username: admin
     password: password
-    registry_url: http://ansiblecontroller:81
+    registry_url: http://localhost:81
     timeout: 20
 
 - name: 'Tag local images for upload to harbor'
-  shell: "docker tag {{ item.0 }} ansiblecontroller:81/library/{{ item.1 }}"
+  shell: "docker tag {{ item.0 }} localhost:81/library/{{ item.1 }}"
   with_together:
     - "{{harbor_docker_images}}"
     - "{{harbor_docker_image_names}}"
 
 - name: 'Upload local images to harbor'
   docker_image:
-    name: "ansiblecontroller:81/library/{{ item }}"
+    name: "localhost:81/library/{{ item }}"
     push: yes
     pull: no
   with_items:

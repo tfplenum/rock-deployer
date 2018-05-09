@@ -136,17 +136,16 @@
     timeout: 20
 
 - name: 'Tag local images for upload to harbor'
-  shell: "docker tag {{ item.0 }} localhost:81/library/{{ item.1 }}"
-  with_together:
+  shell: "docker tag {{ item }} localhost:81/library/{{ item[item.rfind('/')+1:] }}"
+  with_items:
     - "{{harbor_docker_images}}"
-    - "{{harbor_docker_image_names}}"
 
 - name: 'Upload local images to harbor'
   docker_image:
-    name: "localhost:81/library/{{ item }}"
+    name: "localhost:81/library/{{ item[item.rfind('/')+1:] }}"
     push: yes
     pull: no
   with_items:
-    - "{{harbor_docker_image_names}}"
+    - "{{harbor_docker_images}}"
 
 ...

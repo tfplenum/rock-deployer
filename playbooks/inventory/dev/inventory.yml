@@ -17,6 +17,7 @@ all:
     dns: 192.168.122.7
     gateway: 192.168.122.2
 
+    pull_repos: false
     # iso_path and kick media need to be changed based on the source iso used.
     iso_pth: /root/CentOS-7-x86_64-Minimal-1708.iso
     kick_media: centos # centos, rhel or atomic

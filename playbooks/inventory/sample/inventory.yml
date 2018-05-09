@@ -16,7 +16,7 @@ all:
     dhcp_net: '{{ ansible_default_ipv4.network }}'
     dns: # Ip Address to DNS Server
     gateway: # Ip Address of Gateway
-
+    pull_repos: false
     # iso_path and kick media need to be changed based on the source iso used.
     iso_pth: # Path to iso /root/rhel-atomic-installer-7.5.0-1.x86_64.iso
     kick_media: # use one of the following: rhel, centos, or atomic

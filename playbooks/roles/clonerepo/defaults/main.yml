@@ -2,9 +2,6 @@
 ---
 #### repo configuration variables ####
 
-#pull_repos: true
-pull_repos: false
-
 bootstrap_package_names:
   - yum-utils
   - createrepo

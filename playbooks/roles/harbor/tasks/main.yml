@@ -50,7 +50,7 @@
      replace:
         path: "{{ rocknsm_dir }}harbor/harbor/harbor.cfg"
         regexp: '(\s+)hostname = reg\.mydomain\.com(\s+.*)?$'
-        replace: '\1hostname = {{ rock_hostname }}:{{ harbor_firewall_port }}\2'
+        replace: '\1hostname = localhost:{{ harbor_firewall_port }}\2'
    - replace:
         path: "{{ rocknsm_dir }}harbor/harbor/harbor.cfg"
         regexp: '(\s+)db_password = root123(\s+.*)?$'

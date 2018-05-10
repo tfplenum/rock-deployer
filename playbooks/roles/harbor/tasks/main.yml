@@ -8,6 +8,23 @@
     state: directory
     mode: 0740
 
+- name: "Check if EPEL repo is already configured"
+  stat: path={{ epel_repofile_path }}
+  register: epel_repofile_result
+
+- name: "Install EPEL release"
+  yum:
+    name: "{{ epel_repo_url }}"
+    state: present
+  register: result
+  when: not epel_repofile_result.stat.exists
+
+- name: "Import EPEL GPG key"
+  rpm_key:
+    key: "{{ epel_repo_gpg_key_url }}"
+    state: present
+  when: not epel_repofile_result.stat.exists
+
 - name: "Install Docker"
   yum:
     name: "{{item}}"
@@ -119,17 +136,16 @@
     timeout: 20
 
 - name: 'Tag local images for upload to harbor'
-  shell: "docker tag {{ item.0 }} localhost:81/library/{{ item.1 }}"
-  with_together:
+  shell: "docker tag {{ item }} localhost:81/library/{{ item[item.rfind('/')+1:] }}"
+  with_items:
     - "{{harbor_docker_images}}"
-    - "{{harbor_docker_image_names}}"
 
 - name: 'Upload local images to harbor'
   docker_image:
-    name: "localhost:81/library/{{ item }}"
+    name: "localhost:81/library/{{ item[item.rfind('/')+1:] }}"
     push: yes
     pull: no
   with_items:
-    - "{{harbor_docker_image_names}}"
+    - "{{harbor_docker_images}}"
 
 ...

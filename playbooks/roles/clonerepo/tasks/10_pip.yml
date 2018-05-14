@@ -1,0 +1,10 @@
+---
+- name: "Install pip"
+  yum:
+    name: python-pip
+    state: present
+
+- name: "Download pip packages to the custom install repo"
+  shell: "pip download -d {{ rockoffline_dir }}/pip {{ item }}"
+  with_items:
+  - "{{ pip_downloads }}"

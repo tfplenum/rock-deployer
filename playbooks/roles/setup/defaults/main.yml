@@ -1,0 +1,16 @@
+---
+# defaults file for roles/kickstart
+#
+package_list:
+  - git
+  - ansible
+
+git_repos:
+  rock:
+    branch: devel
+    dest: "{{ install_dir }}/tfplenum-rock"
+    url: https://github.com/tfplenum/rock.git
+  deployer: 
+    branch: master
+    dest: "{{ install_dir }}/tfplenum-deployer"
+    url: https://github.com/tfplenum/rock-deployer.git       

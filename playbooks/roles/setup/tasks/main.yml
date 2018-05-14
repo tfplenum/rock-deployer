@@ -1,0 +1,26 @@
+---
+
+- name: "Check if EPEL repo is already configured"
+  stat: path={{ epel_repofile_path }}
+  register: epel_repofile_result
+
+- name: "Install EPEL release"
+  yum:
+    name: "{{ epel_repo_url }}"
+    state: present
+  register: result
+  when: not epel_repofile_result.stat.exists
+
+- name: "Install required packages"
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - "{{ package_list }}"
+
+- name: Pull git repos
+  git:
+    repo: "{{ item.value.url }}"
+    dest: "{{ item.value.dest }}"
+    version: "{{ item.value.branch }}"
+  loop: "{{ lookup('dict', git_repos) }}"

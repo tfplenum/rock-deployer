@@ -4,7 +4,8 @@ tftp_dir: /var/lib/tftpboot
 web_root: /var/www/html
 
 install_group: root
-rocknsm_dir: /opt/rockdir/
+rocknsm_dir: /opt
+rockoffline_dir: "{{ web_root }}/offlinerepo"
 install_dir: /opt/rock
 sysctl_file: /etc/sysctl.d/rock.conf
 fqdn: default.svc.cluster.local

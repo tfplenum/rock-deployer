@@ -6,11 +6,17 @@ bootstrap_package_names:
   - yum-utils
   - createrepo
 
-repo_names:
+centos_repos:
   - base
-  - epel
   - updates
   - extras
+
+rhel_repos:
+  - rhel-7-server-extras-rpms
+  - rhel-7-server-rpms
+  
+additional_repos:
+  - epel
   - rocknsm
   - kubernetes
 

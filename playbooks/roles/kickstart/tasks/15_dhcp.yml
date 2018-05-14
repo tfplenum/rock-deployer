@@ -15,12 +15,18 @@
         group: root
         mode: 0644
 
+    - name: Configure the firewall
+      firewalld:
+        service: dhcp
+        immediate: yes
+        permanent: yes
+        state: enabled
+
     - name: dhcp service
       service:
         name: dhcpd
         state: started
         enabled: yes
-
   when: 
     - dhcp
     - dhcp_start != ""

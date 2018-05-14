@@ -17,10 +17,14 @@ all:
     dns: 192.168.122.7
     gateway: 192.168.122.2
 
-    pull_repos: false
+    pull_all_repos: false
+    pull_centos_repos: false
+    pull_rhel_repos: true
+    pull_additional_repos: true
+    
     # iso_path and kick media need to be changed based on the source iso used.
-    iso_pth: /root/CentOS-7-x86_64-Minimal-1708.iso
-    kick_media: centos # centos, rhel or atomic
+    iso_pth: /root/rhel-server-7.4-x86_64-dvd.iso
+    kick_media: rhel # centos, rhel or atomic
     
     kick_srvr: '{{ ansible_default_ipv4.address }}'    
     netmask: 255.255.255.0    
@@ -33,21 +37,13 @@ all:
           hosts:
             rockserver1.lan: 
               ip: 192.168.122.4
-              mac: 00:0c:29:09:31:67
+              mac: 00:50:56:22:B2:42
               boot_drive: sda
-            rockserver2.lan: 
+            rockserver2.lan:
               ip: 192.168.122.5
-              mac: 00:0C:29:BC:A2:B7
-              boot_drive: sda
+              mac: 00:50:56:39:32:59
+              boot_drive: sda            
             rocksensor1.lan:
               ip: 192.168.122.6
-              mac: 00:0c:29:ae:48:c9
-              boot_drive: sda
-            rocksensor2.lan:
-              ip: 192.168.122.9
-              mac: 00:0c:29:21:59:f5
-              boot_drive: sda
-            rockserver3.lan:
-              ip: 192.168.122.10
-              mac: 00:50:56:29:0A:6E
+              mac: 00:50:56:34:FB:53
               boot_drive: sda

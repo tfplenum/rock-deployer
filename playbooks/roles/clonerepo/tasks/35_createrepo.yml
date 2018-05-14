@@ -1,0 +1,71 @@
+---
+
+- name: set repo list
+  set_fact:
+    repos: []
+
+- name: setup repo list
+  set_fact:
+    repos: "{{ repos }} + [ '{{ item }}' ]" 
+  when: (pull_all_repos is defined and pull_all_repos) 
+    or (pull_rhel_repos is defined and pull_rhel_repos) 
+  with_items: "{{ rhel_repos }}"
+
+- name: setup repo list
+  set_fact:
+    repos: "{{ repos }} + [ '{{ item }}' ]" 
+  when: (pull_all_repos is defined and pull_all_repos) 
+    or (pull_centos_repos is defined and pull_centos_repos) 
+  with_items: 
+  - "{{ centos_repos }}"
+
+- name: setup repo list
+  set_fact:
+    repos: "{{ repos }} + [ '{{ item }}' ]" 
+  when: (pull_all_repos is defined and pull_all_repos) 
+    or (pull_additional_repos is defined and pull_additional_repos) 
+  with_items: "{{ additional_repos }}"
+
+- name: Remove Repodata
+  file:
+    path: "{{ rockoffline_dir }}/repodata"
+    state: absent
+
+- name: "Establish the local repo as a repository"
+  shell: "createrepo {{ rockoffline_dir }}"
+
+- name: Update directory permissions
+  file:
+    path: "{{ rockoffline_dir }}"
+    state: directory
+    mode: 0755
+    recurse: true
+    setype: httpd_sys_content_t
+
+- find:
+    path: "{{ rockoffline_dir }}"
+    file_type: file
+    recurse: yes
+  register: find_result
+
+- file:
+    path: "{{ item.path }}"
+    owner: root
+    group: root
+    mode: 0444
+    setype: httpd_sys_content_t
+  with_items: "{{ find_result.files }}"
+
+
+
+# - name: "Change top level directory permissions as needed"
+#   shell: "chmod 0755 {{ rocknsm_dir }}"
+
+# - name: "Change next level of permissions"  
+#   shell: "chmod 0755 {{ rocknsm_dir }}offlinerepo"
+
+# - name: "Give all directories the right permissions"
+#   shell: "chmod 0755 $(find {{ rocknsm_dir }}offlinerepo -type d)"
+
+# - name: "Give all files the right permissions"
+#   shell: "chmod 0744 $(find {{ rocknsm_dir }}offlinerepo -type f)"

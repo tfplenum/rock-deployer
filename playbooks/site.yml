@@ -5,6 +5,11 @@
 # We follow the guidance to include naming conventions there.
 
 ---
+- name: Setup Controller
+  hosts: localhost
+  roles:
+    - { role: setup, tags: setup }
+
 - name: Setup DNS Server
   hosts: localhost
   roles:

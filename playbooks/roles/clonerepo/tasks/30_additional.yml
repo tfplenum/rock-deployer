@@ -1,35 +1,37 @@
 ---
 - name: Additional Repos
   block:
-    - name: "Check if EPEL repo is already configured"
-      stat: path={{ epel_repofile_path }}
-      register: epel_repofile_result
-
-    - name: "Install EPEL release"
-      yum:
-        name: "{{ epel_repo_url }}"
-        state: present
-      register: result
-      when: not epel_repofile_result.stat.exists
-
-    - name: "Setup ROCK NSM repo"
+    - name: Setup Repos
       yum_repository:
-        baseurl: "{{ rocknsm_baseurl }}"
-        description: "ROCK NSM repository for devel"
+        baseurl: "{{ item.value.baseurl }}"
+        description: "{{ item.value.description }}"
         gpgcheck: false
-        name: rocknsm
-
-    - name: "Setup Kubernetes repo"
-      yum_repository:
-        baseurl: "{{ kube_baseurl }}"
-        description: "Kubernetes YUM repo"
-        gpgcheck: false
-        name: kubernetes
-
+        enabled: true
+        name: "{{ item.value.name }}"        
+      loop: "{{ lookup('dict', additional_repo_info) }}"
+    
     - name: "Mirror Additional repositories"
-      shell: "reposync --repoid={{ item }} --download_path={{ rockoffline_dir }} --download-metadata --downloadcomps"
-      with_items:
-        - "{{ additional_repos }}"  
+      shell: "reposync --repoid={{ item.value.name }} --download_path={{ item.value.download_path }} --download-metadata --downloadcomps"
+      loop: "{{ lookup('dict', additional_repo_info) }}"
+
+    - name: move pool to kubernetes dir
+      file:
+        path: "{{ rockoffline_dir }}/{{ additional_repo_info['kube']['name'] }}"
+        state: "absent"
+
+    - name: Force Symlink to k8s directory
+      file: 
+        path: "{{ rockoffline_dir }}/{{ additional_repo_info['kube']['name'] }}" 
+        src: "{{ rockoffline_dir }}/pool"
+        state: link 
+        force: yes
+
+    - name: get gpgkeys
+      get_url:
+        url: "{{ item.value.gpgkeyurl }}"
+        dest: "{{ rockoffline_dir }}/{{ item.value.name }}"
+        mode: 0644
+      loop: "{{ lookup('dict', additional_repo_info) }}"
 
   when: (pull_all_repos is defined and pull_all_repos) 
     or (pull_additional_repos is defined and pull_additional_repos)

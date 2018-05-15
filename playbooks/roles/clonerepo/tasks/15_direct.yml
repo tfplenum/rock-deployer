@@ -1,4 +1,13 @@
 ---
+
+- name: "Create directory for misc"
+  file:
+    path: "{{ rockoffline_dir }}/misc"
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+
 - name: "Download all other direct download files into local repository, including dependencies"
   get_url:
     url: "{{ item }}" 

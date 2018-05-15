@@ -31,8 +31,9 @@
     path: "{{ rockoffline_dir }}/repodata"
     state: absent
 
-- name: "Establish the local repo as a repository"
-  shell: "createrepo {{ rockoffline_dir }}"
+- name: Setup RepoData
+  include_tasks: include_repo.yml repo="{{ item }}"
+  with_items: "{{ repos }}"
 
 - name: Update directory permissions
   file:

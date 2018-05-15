@@ -1,0 +1,20 @@
+- name: Remove Repodata
+  file:
+    path: "{{ rockoffline_dir }}/{{repo}}/repodata"
+    state: absent
+
+- name: Validate if comps.xml exists
+  stat:
+    path: "{{ rockoffline_dir }}/{{ repo }}/comps.xml"
+  register: comps_result
+
+- set_fact:
+    createrepo_cmd: "createrepo -g  {{ rockoffline_dir }}/{{ repo }}/comps.xml --workers=4 {{ rockoffline_dir }}/{{ repo }} "
+  when: comps_result.stat.exists
+
+- set_fact:
+    createrepo_cmd: "createrepo --workers=4 {{ rockoffline_dir }}/{{ repo }}"
+  when: comps_result.stat.exists == false
+
+- name: "Establish the local repo as a repository"
+  shell: "{{ createrepo_cmd }}"

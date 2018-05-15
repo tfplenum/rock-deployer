@@ -14,3 +14,12 @@
     dest: "{{ rockoffline_dir }}/misc"
   with_items:
     - "{{ direct_download_package_names }}"
+  when: "'.rpm' in item"
+
+- name: "Download all other direct download files into local repository, including dependencies"
+  get_url:
+    url: "{{ item }}" 
+    dest: "{{ rockoffline_dir }}"
+  with_items:
+    - "{{ direct_download_package_names }}"
+  when: "'.rpm' not in item"

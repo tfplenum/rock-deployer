@@ -39,26 +39,26 @@
   include_tasks: include_repo.yml repo="{{ item }}"
   with_items: "{{ repos }}"
 
+- name: get list of directories with wrong permissions
+  shell: |
+    find {{ rockoffline_dir }} -type d -not -perm 755
+  register: dir_list
+
 - name: Update directory permissions
   file:
-    path: "{{ rockoffline_dir }}"
-    state: directory
+    path: "{{ item }}"   
     mode: 0755
-    recurse: true
     setype: httpd_sys_content_t
-
-- name: find list of files in offline dir
-  find:
-    path: "{{ rockoffline_dir }}"
-    file_type: file
-    recurse: yes
-  register: find_result
-
-- name: Update file permissions and se context 
-  file:
-    path: "{{ item.path }}"
     owner: root
     group: root
-    mode: 0444
-    setype: httpd_sys_content_t
-  with_items: "{{ find_result.files }}"
+  with_items: "{{ dir_list.stdout }}"
+  when: dir_list.stdout != ""
+
+- name: fix files with wrong permissions
+  shell: |
+    find {{ rockoffline_dir }} -type f -not -perm 644 -exec chmod 644 {} \;
+  register: file_list
+
+- name: restorecon offlinerepo
+  shell: |
+    restorecon -Rv {{ rockoffline_dir }}

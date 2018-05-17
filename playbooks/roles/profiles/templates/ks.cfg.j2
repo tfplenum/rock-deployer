@@ -1,3 +1,6 @@
+# Determine what drives to use based on inventory file
+{% if item is defined %}{% set boot_drive = hostvars[item].boot_drive %}{% else %}{% set boot_drive = default_boot_drive %}{% endif %}
+
 #version=DEVEL
 # System authorization information
 auth --enableshadow --passalgo=sha512
@@ -6,13 +9,13 @@ url --url http://{{ kick_srvr }}/{{ kick_media }}
 text
 # Run the Setup Agent on first boot
 firstboot --disable
-ignoredisk --only-use={% if item is defined %}{{ hostvars[item].boot_drive }}{% else %}{{ default_boot_drive }}{% endif %}
+ignoredisk --only-use={{ boot_drive }}
 # Keyboard layouts
 keyboard --vckeymap=us --xlayouts='us'
 # System language
 lang en_US.UTF-8
 # Disable Firewalld
-firewall --disabled
+firewall --enabled
 # Disable SELinux
 selinux --disabled
 eula --agreed
@@ -37,13 +40,13 @@ services --disabled="chronyd"
 # System timezone
 timezone {{ timezone }} --isUtc --nontp
 # System bootloader configuration
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive={% if item is defined %}{{ hostvars[item].boot_drive }}{% else %}{{ default_boot_drive }}{% endif %}
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive={{ boot_drive }}
 
 # Partition clearing information
 zerombr
 clearpart --all --initlabel
 part /boot --fstype="xfs" --size=500
-part pv.01 --size=1 --grow
+part pv.01 --size=1 --grow --ondrive={{ boot_drive }}
 volgroup vg01 pv.01
 logvol /  --fstype="xfs" --size=1 --name=root --vgname=vg01 --grow
 
@@ -51,6 +54,7 @@ logvol /  --fstype="xfs" --size=1 --name=root --vgname=vg01 --grow
 @^minimal
 @core
 kexec-tools
+pciutils
 
 %end
 

@@ -1,0 +1,22 @@
+---
+- name: Validate epel is configured
+  yum_repository:
+    baseurl: "{{ additional_repo_info['epel']['baseurl'] }}"
+    description: "{{ additional_repo_info['epel']['description'] }}"
+    gpgcheck: false
+    enabled: true
+    name: "{{ additional_repo_info['epel']['name'] }}"
+
+- name: "Install required packages"
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - "{{ package_list }}"
+
+- name: Pull git repos
+  git:
+    repo: "{{ item.value.url }}"
+    dest: "{{ item.value.dest }}"
+    version: "{{ item.value.branch }}"
+  loop: "{{ lookup('dict', git_repos) }}"

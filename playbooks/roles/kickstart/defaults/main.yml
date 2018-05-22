@@ -7,6 +7,19 @@ tftp_pxe:
  - /usr/share/syslinux/vesamenu.c32
  - /mnt/isolinux/initrd.img
  - /mnt/isolinux/vmlinuz
+
+tftp_uefi:
+ - /mnt/EFI/BOOT/BOOTX64.EFI
+ - /mnt/EFI/BOOT/grubx64.efi
+
+tftp_coreos:
+  - vmlinuz
+  - cpio.gz
+
+coreos_deps:
+  - https://stable.release.core-os.net/amd64-usr/current/coreos_production_image.bin.bz2
+  - https://stable.release.core-os.net/amd64-usr/current/coreos_production_image.bin.bz2.sig
+
 apache: httpd
 reponame: localrepo
 
@@ -29,12 +42,6 @@ keep_mnt: true
 
 #Comma separated list of packages to install
 xtras: rsync,policycoreutils-python
-
-#DHCP range start address
-dhcp_start: 192.168.122.155
-
-#DHCP range end address
-dhcp_end: 192.168.122.165
 
 # Set to "true" to enable DHCP.
 dhcp: true

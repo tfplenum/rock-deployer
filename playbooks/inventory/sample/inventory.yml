@@ -23,13 +23,18 @@ all:
     pull_additional_repos: false
     
     # iso_path and kick media need to be changed based on the source iso used.
-    iso_pth: # Path to iso /root/rhel-atomic-installer-7.5.0-1.x86_64.iso
-    kick_media: # use one of the following: rhel, centos, or atomic
+    iso_pth: # Path to iso /root/coreos_production_iso_image.iso
+    iso_url: # Url to ISO ie: https://stable.release.core-os.net/amd64-usr/current/coreos_production_iso_image.iso
+    kick_media: # use one of the following: atomic, centos, coreos, or rhel
     
     kick_srvr: '{{ ansible_default_ipv4.address }}'
     netmask: # Network Mask of Subnet
     root_password: #"password"
     timezone: #"America/Chicago"
+
+    # COREOS VARS    
+    core_sshAuthorizedKeys: # ssh public key for core user
+
   children:
     nodes:
       children:

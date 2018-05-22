@@ -40,11 +40,14 @@ services --disabled="chronyd"
 # System timezone
 timezone {{ timezone }} --isUtc --nontp
 # System bootloader configuration
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive={{ boot_drive }}
+bootloader --append="rhgb quiet crashkernel=auto" --location=mbr --boot-drive={{ boot_drive }}
 
 # Partition clearing information
 zerombr
 clearpart --all --initlabel
+{% if uefi %}
+part /boot/efi --fstype=efi --grow --maxsize=200 --size=20
+{% endif %}
 part /boot --fstype="xfs" --size=500
 part pv.01 --size=1 --grow --ondrive={{ boot_drive }}
 volgroup vg01 pv.01

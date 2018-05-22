@@ -15,7 +15,7 @@
     - name: Make default uefi {{ kick_media }} {{ kick_cfg }} avail
       template:
         src: ks.cfg.j2
-        dest: "{{ ks_template_dir }}/ks.cfg"
+        dest: "{{ ks_template_dir }}/uefi/ks.cfg"
         owner: root
         group: root
         mode: 0644

@@ -1,7 +1,18 @@
 ---
-- name: rhel / centos block
+- name: "{{ kick_media }} block"
   block:
-    - name: Make default {{ kick_cfg }} avail
+    - name: Make default bios {{ kick_media }} {{ kick_cfg }} avail
+      template:
+        src: ks.cfg.j2
+        dest: "{{ ks_template_dir }}/ks.cfg"
+        owner: root
+        group: root
+        mode: 0644
+        setype: httpd_sys_content_t
+      vars:
+        uefi: false
+        
+    - name: Make default uefi {{ kick_media }} {{ kick_cfg }} avail
       template:
         src: ks.cfg.j2
         dest: "{{ ks_template_dir }}/ks.cfg"
@@ -12,7 +23,7 @@
       vars:
         uefi: true
 
-    - name: Create bios ks for each server
+    - name: Create {{ kick_media }} bios ks for each server
       template:
         src: "ks.cfg.j2"
         dest: "{{ ks_template_dir }}/{{ item }}.cfg"
@@ -22,11 +33,10 @@
         setype: httpd_sys_content_t
       with_items:
       - "{{ groups['servers'] }}"
-      when: "'atomic' not in kick_media"
       vars:
         uefi: false
 
-    - name: Create uefi ks for each server
+    - name: Create {{ kick_media }} uefi ks for each server
       template:
         src: "ks.cfg.j2"
         dest: "{{ ks_template_dir }}/uefi/{{ item }}.cfg"
@@ -36,11 +46,10 @@
         setype: httpd_sys_content_t
       with_items:
       - "{{ groups['servers'] }}"
-      when: "'atomic' not in kick_media"
       vars:
         uefi: true
 
-    - name: Default PXE Menus
+    - name: Default {{ kick_media }} PXE Menus
       template:
         src: "default.j2"
         dest: "{{ tftp_dir }}/pxelinux.cfg/default"
@@ -50,7 +59,7 @@
         setype: "cobbler_var_lib_t"
       register: tftp
 
-    - name: UEFI PXE Menus
+    - name: UEFI {{ kick_media }} PXE Menus
       template:
         src: "grub.cfg.j2"
         dest: "{{ tftp_dir }}/uefi/grub.cfg"
@@ -60,7 +69,7 @@
         setype: "cobbler_var_lib_t"
       register: tftp
 
-    - name: Create bios pxe menu for each server
+    - name: Create {{ kick_media }} bios pxe menu for each server
       template:
         src: "default.j2"
         dest: "{{ tftp_dir }}/pxelinux.cfg/01-{{ hostvars[item].mac | regex_replace(':', '-') | lower }}"
@@ -72,7 +81,7 @@
       with_items:
       - "{{ groups['servers'] }}"
 
-    - name: Create uefi pxe menu for each server
+    - name: Create {{ kick_media }} uefi pxe menu for each server
       template:
         src: "grub.cfg.j2"
         dest: "{{ tftp_dir }}/uefi/grub.cfg-01-{{ hostvars[item].mac | regex_replace(':', '-') | lower }}-"

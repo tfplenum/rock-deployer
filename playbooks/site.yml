@@ -15,6 +15,16 @@
   roles:
     - { role: dnsmasq, tags: ['dnsmasq','dns'] }
 
+- name: Setup Kickstart server
+  hosts: localhost
+  roles:
+    - { role: kickstart, tags: kickstart }
+
+- name: Generate Profiles
+  hosts: localhost
+  roles:
+    - { role: profiles, tags: ['profiles', 'profile'] }
+
 - name: Clone and create repositories
   hosts: localhost
   roles:
@@ -25,15 +35,7 @@
   roles:
     - { role: harbor, tags: harbor }
 
-- name: Setup Kickstart server
-  hosts: localhost
-  roles:
-    - { role: kickstart, tags: kickstart }
 
-- name: Generate Profiles
-  hosts: localhost
-  roles:
-    - { role: profiles, tags: ['profiles', 'profile'] }
 
 
 ...

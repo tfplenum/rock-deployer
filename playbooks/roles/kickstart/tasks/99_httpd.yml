@@ -1,6 +1,6 @@
 ---
 - name: Configure web server
-  block:
+  block:      
     - name: Install packages
       yum:
         name: "{{ apache }}"

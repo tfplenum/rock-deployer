@@ -1,4 +1,12 @@
 ---
+- name: Download {{ kick_media }} ISO
+  get_url:
+    url: "{{ item }}" 
+    dest: "{{ iso_pth }}"
+  with_items:
+    - "{{ iso_url }}"
+  when: iso_url != ""
+
 - name: Mount content to {{ mnt_pth }}
   mount:
     fstype: iso9660

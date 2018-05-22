@@ -1,0 +1,22 @@
+---
+- name: "Create directory for offline repos"
+  file:
+    path: "{{ rockoffline_dir }}"
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+    setype: httpd_sys_content_t
+
+- name: "Install bootstrap packages"
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ bootstrap_package_names }}"
+
+- name: Enable Firewalld Service
+  service:
+    name: "firewalld"
+    state: started
+    enabled: true

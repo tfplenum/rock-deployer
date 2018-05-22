@@ -2,108 +2,15 @@
 ################## Predownload Repos ##################
 #######################################################
 ---
-- name: "Check if EPEL repo is already configured"
-  stat: path={{ epel_repofile_path }}
-  register: epel_repofile_result
-
-- name: "Install EPEL release"
-  yum:
-    name: "{{ epel_repo_url }}"
-    state: present
-  register: result
-  when: not epel_repofile_result.stat.exists
-
-- name: "Setup ROCK NSM repo"
-  yum_repository:
-    baseurl: "{{ rocknsm_baseurl }}"
-    description: "ROCK NSM repository for devel"
-    gpgcheck: false
-    name: rocknsm
-
-- name: "Create directory for offline repos"
-  file:
-    path: "{{ rocknsm_dir }}offlinerepo"
-    state: directory
-    mode: 0740
-
-- name: "Install bootstrap packages"
-  yum:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - "{{ bootstrap_package_names }}"
-
-- name: "Install pip"
-  yum:
-    name: python-pip
-    state: present
-
-- name: "Setup Kubernetes repo"
-  yum_repository:
-    baseurl: "{{ kube_baseurl }}"
-    description: "Kubernetes YUM repo"
-    gpgcheck: false
-    name: kubernetes
-
-- name: "Download pip packages to the custom install repo"
-  shell: "pip download -d {{ rocknsm_dir }}offlinerepo {{ item }}"
-  with_items:
-    - "{{ pip_downloads }}"
-
-- name: "Download all other direct download files into local repository, including dependencies"
-  get_url:
-    url: "{{ item }}" 
-    dest: "{{ rocknsm_dir }}offlinerepo/"
-  with_items:
-    - "{{ direct_download_package_names }}"
-
-- name: "Mirror specified repositories"
-  shell: "reposync --repoid={{ item }} --download_path={{ rocknsm_dir }}offlinerepo --download-metadata --downloadcomps"
-  with_items:
-    - "{{ repo_names }}"
-  when: pull_repos == true
-
-- name: "Establish the local repo as a repository"
-  shell: "createrepo {{ rocknsm_dir }}offlinerepo"
-
-- name: "Install httpd so this repo can be published"
-  yum:
-    name: httpd
-    state: present
-
-- name: "Create a symlink to the repo"
-  file: 
-    dest: /var/www/html/offlinerepo 
-    src: "{{ rocknsm_dir }}offlinerepo"
-    force: yes
-    state: link
-
-- name: "Change top level directory permissions as needed"
-  shell: "chmod 0755 {{ rocknsm_dir }}"
-
-- name: "Change next level of permissions"  
-  shell: "chmod 0755 {{ rocknsm_dir }}offlinerepo"
-
-- name: "Give all directories the right permissions"
-  shell: "chmod 0755 $(find {{ rocknsm_dir }}offlinerepo -type d)"
-
-- name: "Give all files the right permissions"
-  shell: "chmod 0744 $(find {{ rocknsm_dir }}offlinerepo -type f)"
-
-- name: "Open up port 80 to allow access"
-  firewalld: 
-    service: http
-    permanent: true
-    immediate: true
-    state: enabled
-
-- name: "Need to disable SElinux to run a viable webserver"
-  selinux:
-    state: disabled
-
-- name: "Start httpd"
-  service: 
-    name: httpd
-    state: restarted
-    enabled: yes
+- import_tasks: 00_httpd.yml
+- import_tasks: 05_setup.yml
+- import_tasks: 10_pip.yml
+- import_tasks: 15_direct.yml
+  tags: direct
+- import_tasks: 20_centos.yml
+- import_tasks: 25_rhel.yml
+- import_tasks: 30_additional.yml
+  tags: additional
+- import_tasks: 35_createrepo.yml
+  tags: createrepo
 ...

@@ -5,10 +5,25 @@
 # We follow the guidance to include naming conventions there.
 
 ---
+- name: Setup Controller
+  hosts: localhost
+  roles:
+    - { role: setup, tags: setup }
+
 - name: Setup DNS Server
   hosts: localhost
   roles:
     - { role: dnsmasq, tags: ['dnsmasq','dns'] }
+
+- name: Setup Kickstart server
+  hosts: localhost
+  roles:
+    - { role: kickstart, tags: kickstart }
+
+- name: Generate Profiles
+  hosts: localhost
+  roles:
+    - { role: profiles, tags: ['profiles', 'profile'] }
 
 - name: Clone and create repositories
   hosts: localhost
@@ -20,15 +35,7 @@
   roles:
     - { role: harbor, tags: harbor }
 
-- name: Setup Kickstart server
-  hosts: localhost
-  roles:
-    - { role: kickstart, tags: kickstart }
 
-- name: Generate Profiles
-  hosts: localhost
-  roles:
-    - { role: profiles, tags: ['profiles', 'profile'] }
 
 
 ...

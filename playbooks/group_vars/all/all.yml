@@ -3,8 +3,11 @@ kick_cfg: ks.cfg
 tftp_dir: /var/lib/tftpboot
 web_root: /var/www/html
 
+coreos_version: 1688.5.3
+
 install_group: root
-rocknsm_dir: /opt/rockdir/
+rocknsm_dir: /opt
+rockoffline_dir: "{{ web_root }}/offlinerepo"
 install_dir: /opt/rock
 sysctl_file: /etc/sysctl.d/rock.conf
 fqdn: default.svc.cluster.local
@@ -26,47 +29,63 @@ kafka_fqdn: "kafka.{{ fqdn }}"
 kafka_port: 9092
 kafka_retention: 168
 
-
 rock_hostname: "ansiblecontroller"
 harbor_ver: '1.4.0'
 
-#EPEL
-epel_repo_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
-epel_repo_gpg_key_url: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
-epel_repofile_path: "/etc/yum.repos.d/epel.repo"
-
-rocknsm_baseurl: 'https://copr-be.cloud.fedoraproject.org/results/@rocknsm/rocknsm-2.1/epel-7-$basearch/'
-rocknsm_gpgurl: 'https://copr-be.cloud.fedoraproject.org/results/@rocknsm/rocknsm-2.1/pubkey.gpg'
-
-kube_baseurl: "https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64"
-kubernetes_conf_file: /etc/kubernetes/admin.conf
-kube_dir: "{{ install_dir }}/kubernetes"
-kube_version: "1.9.3"
+additional_repo_info:
+  kube:
+    name: "kubernetes"
+    baseurl: "https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64"
+    gpgkeyurl: "https://packages.cloud.google.com/yum/doc/yum-key.gpg"
+    gpgkeyname: "yum-key.gpg"
+    description: "kubernetes repo"
+    # Required because kube public repo uses relative path so this is a hack to fix it
+    download_path: "{{ rockoffline_dir }}/tmp"
+  rocknsm:
+    name: "rocknsm"
+    baseurl: "https://copr-be.cloud.fedoraproject.org/results/@rocknsm/rocknsm-2.1/epel-7-$basearch/"
+    gpgkeyurl: "https://copr-be.cloud.fedoraproject.org/results/@rocknsm/rocknsm-2.1/pubkey.gpg"
+    gpgkeyname: "pubkey.gpg"
+    description: "rocknsm repo"
+    download_path: "{{ rockoffline_dir }}"
+  epel:
+    name: "epel"
+    baseurl: "http://download.fedoraproject.org/pub/epel/7/$basearch"
+    gpgkeyurl: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+    gpgkeyname: "RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+    description: "epel repo"
+    download_path: "{{ rockoffline_dir }}"
+  ceph_base:
+    name: "ceph_base"
+    baseurl: "https://download.ceph.com/rpm-luminous/el7/$basearch"
+    gpgkeyurl: "https://download.ceph.com/keys/release.asc"
+    gpgkeyname: "release.asc"
+    description: "ceph base repo"
+    download_path: "{{ rockoffline_dir }}"
+  ceph_noarch:
+    name: "ceph_noarch"
+    baseurl: "https://download.ceph.com/rpm-luminous/el7/$basearch"
+    gpgkeyurl: "https://download.ceph.com/keys/release.asc"
+    gpgkeyname: "release.asc"
+    description: "ceph base repo"
+    download_path: "{{ rockoffline_dir }}"
+  ceph_srpms:
+    name: "ceph_srpms"
+    baseurl: "https://download.ceph.com/rpm-luminous/el7/SRPMS"
+    gpgkeyurl: "https://download.ceph.com/keys/release.asc"
+    gpgkeyname: "release.asc"
+    description: "ceph srpms repo"
+    download_path: "{{ rockoffline_dir }}"
 
 bootstrap_package_names:
   - yum-utils
   - createrepo
-
-repo_names:
-  - base
-  - epel
-  - updates
-  - extras
-  - rocknsm
-  - kubernetes
 
 gpg_keys:
   - "https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
   - "https://copr-be.cloud.fedoraproject.org/results/@rocknsm/rocknsm-2.1/pubkey.gpg"
   - "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7"
   - "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
-
-direct_download_package_names:
-  - 'https://download.ceph.com/rpm-luminous/el7/noarch/ceph-deploy-1.5.39-0.noarch.rpm'
-  - 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm'
-  - 'https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64'
-  - 'https://storage.googleapis.com/harbor-releases/release-{{ harbor_ver }}/harbor-online-installer-v{{ harbor_ver }}.tgz'
-  - 'https://github.com/docker/compose/releases/download/1.21.0/docker-compose-Linux-x86_64'
 
 pip_downloads:
   - docker-py

@@ -1,0 +1,37 @@
+---
+- name: Additional Repos
+  block:
+    - name: Setup Repos
+      yum_repository:
+        baseurl: "{{ item.value.baseurl }}"
+        description: "{{ item.value.description }}"
+        gpgcheck: false
+        enabled: true
+        name: "{{ item.value.name }}"        
+      loop: "{{ lookup('dict', additional_repo_info) }}"
+    
+    - name: "Mirror Additional repositories"
+      shell: "reposync --repoid={{ item.value.name }} --download_path={{ item.value.download_path }} --download-metadata --downloadcomps"
+      loop: "{{ lookup('dict', additional_repo_info) }}"
+
+    - name: move pool to kubernetes dir
+      file:
+        path: "{{ rockoffline_dir }}/{{ additional_repo_info['kube']['name'] }}"
+        state: "absent"
+
+    - name: Force Symlink to k8s directory
+      file: 
+        path: "{{ rockoffline_dir }}/{{ additional_repo_info['kube']['name'] }}" 
+        src: "{{ rockoffline_dir }}/pool"
+        state: link 
+        force: yes
+
+    - name: get gpgkeys
+      get_url:
+        url: "{{ item.value.gpgkeyurl }}"
+        dest: "{{ rockoffline_dir }}/{{ item.value.name }}"
+        mode: 0644
+      loop: "{{ lookup('dict', additional_repo_info) }}"
+
+  when: (pull_all_repos is defined and pull_all_repos) 
+    or (pull_additional_repos is defined and pull_additional_repos)

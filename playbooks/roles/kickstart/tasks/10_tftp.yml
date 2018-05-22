@@ -16,7 +16,27 @@
         setype: cobbler_var_lib_t
         path: "{{ tftp_dir }}/pxelinux.cfg"
 
-    - name: Place pxe files
+    - name: Create uefi dir
+      file:
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+        setype: cobbler_var_lib_t
+        path: "{{ tftp_dir }}/uefi"
+      when: "'rhel' in kick_media or  'centos' in kick_media"
+    
+    - name: Place coreos pxe files
+      copy:
+        src: "/mnt/coreos/{{ item }}"
+        dest: "{{ tftp_dir }}/coreos-{{ item }}"
+        setype: cobbler_var_lib_t
+      register: tftp
+      with_items:
+        - "{{ tftp_coreos }}"
+      when: "'coreos' in kick_media"
+
+    - name: Place centos & rhel pxe files
       copy:
         src: "{{ item }}"
         dest: "{{ tftp_dir }}"
@@ -24,6 +44,17 @@
       register: tftp
       with_items:
         - "{{ tftp_pxe }}"
+      when: "'rhel' in kick_media or  'centos' in kick_media"
+
+    - name: Place uefi pxe files
+      copy:
+        src: "{{ item }}"
+        dest: "{{ tftp_dir }}/uefi"
+        setype: cobbler_var_lib_t
+      register: tftp
+      with_items:
+        - "{{ tftp_uefi }}"
+      when: "'rhel' in kick_media or  'centos' in kick_media"    
 
     - name: Default pxe menu
       template:

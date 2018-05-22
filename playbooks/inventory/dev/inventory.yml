@@ -7,6 +7,7 @@
 
 all:
   vars:
+    
     default_boot_drive: sda
     dnsmasq: true
     dhcp: true    
@@ -14,18 +15,27 @@ all:
     dhcp_end: 192.168.122.240
     dhcp_mask: '{{ ansible_default_ipv4.netmask }}'
     dhcp_net: '{{ ansible_default_ipv4.network }}'
-    dns: 192.168.122.7
+    dns: 192.168.122.130
     gateway: 192.168.122.2
 
-    pull_repos: false
+    pull_all_repos: false
+    pull_centos_repos: false
+    pull_rhel_repos: false
+    pull_additional_repos: false
+    
     # iso_path and kick media need to be changed based on the source iso used.
-    iso_pth: /root/CentOS-7-x86_64-Minimal-1708.iso
-    kick_media: centos # centos, rhel or atomic
+    iso_pth: /root/coreos_production_iso_image.iso
+    iso_url: https://stable.release.core-os.net/amd64-usr/current/coreos_production_iso_image.iso
+    kick_media: coreos # centos, rhel or atomic, coreos
     
     kick_srvr: '{{ ansible_default_ipv4.address }}'    
     netmask: 255.255.255.0    
-    root_password: "password"
+    root_password: "password"    
     timezone: "America/Chicago"
+
+    # COREOS VARS    
+    core_sshAuthorizedKeys: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3N/e4wbFUQIQjENpl9NX3J3hJWTUVFIhPro7xtatLGvL6yTTjA8fVB4DGj6vr77Y5Fp+8yIXbpCR6Uan0JETGq/AGHnw7rG+k3t5EWGVzp4fd6Q9OQ9A4+H0W9Ve1Jnp7o00e2SQNBq5QjClwqVcomYVyGWf5UwvuKZkuOuKWfqbXBnxZwBiKAUVQ1Fs+jVSbuUKdAzNZgKtXv4nS3D3ZqKWlQoHptWmMX4rcBs8Rk/+5gsdpcSwG1hu6u6kI7Ytog2C2mpnbkbyQZtfH19tCYja9So/oV0B01yd+qG50VyR9bL5CFv2i83PyXAqSaUgq58cJnqBfdy7QmvWao8B5 root@dev"
+
   children:
     nodes:
       children:
@@ -33,21 +43,13 @@ all:
           hosts:
             rockserver1.lan: 
               ip: 192.168.122.4
-              mac: 00:0c:29:09:31:67
+              mac: 00:0C:29:26:0B:33
               boot_drive: sda
-            rockserver2.lan: 
+            rockserver2.lan:
               ip: 192.168.122.5
-              mac: 00:0C:29:BC:A2:B7
+              mac: 00:0c:29:61:ad:00
               boot_drive: sda
             rocksensor1.lan:
               ip: 192.168.122.6
-              mac: 00:0c:29:ae:48:c9
-              boot_drive: sda
-            rocksensor2.lan:
-              ip: 192.168.122.9
-              mac: 00:0c:29:21:59:f5
-              boot_drive: sda
-            rockserver3.lan:
-              ip: 192.168.122.10
-              mac: 00:50:56:29:0A:6E
+              mac: 00:50:56:34:FB:53
               boot_drive: sda

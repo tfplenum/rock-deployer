@@ -44,3 +44,4 @@ all:
               ip: #192.168.122.10
               mac: #00:50:56:2C:4E:E0
               boot_drive: #sda
+              pxe_type: # bios or uefi

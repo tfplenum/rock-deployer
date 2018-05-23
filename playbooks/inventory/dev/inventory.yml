@@ -45,11 +45,14 @@ all:
               ip: 192.168.122.4
               mac: 00:0C:29:26:0B:33
               boot_drive: sda
+              pxe_type: uefi
             rockserver2.lan:
               ip: 192.168.122.5
               mac: 00:0c:29:61:ad:00
               boot_drive: sda
+              pxe_type: uefi
             rocksensor1.lan:
               ip: 192.168.122.6
               mac: 00:50:56:34:FB:53
               boot_drive: sda
+              pxe_type: bios

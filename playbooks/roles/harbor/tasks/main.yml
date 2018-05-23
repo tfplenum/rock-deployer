@@ -4,22 +4,22 @@
 ---
 - name: "Create directory for harbor"
   file:
-    path: "{{ rocknsm_dir }}harbor"
+    path: "{{ harbor_dir }}"
     state: directory
     mode: 0740
 
-- name: Validate EPEL is configured
-  yum_repository:
-    baseurl: "{{ additional_repo_info['epel']['baseurl'] }}"
-    description: "{{ additional_repo_info['epel']['description'] }}"
-    gpgcheck: false
-    enabled: true
-    name: "{{ additional_repo_info['epel']['name'] }}"
-
-- name: "Import EPEL GPG key"
-  rpm_key:
-    key: "{{ rockoffline_dir }}/{{ additional_repo_info['epel']['name'] }}/{{ additional_repo_info['epel']['gpgkeyname'] }}"
-    state: present
+#- name: Validate EPEL is configured
+#  yum_repository:
+#    baseurl: "{{ additional_repo_info['epel']['baseurl'] }}"
+#    description: "{{ additional_repo_info['epel']['description'] }}"
+#    gpgcheck: false
+#    enabled: true
+#    name: "{{ additional_repo_info['epel']['name'] }}"
+#
+#- name: "Import EPEL GPG key"
+#  rpm_key:
+#    key: "{{ rockoffline_dir }}/{{ additional_repo_info['epel']['name'] }}/{{ additional_repo_info['epel']['gpgkeyname'] }}"
+#    state: present
 
 - name: "Install Docker"
   yum:
@@ -36,7 +36,7 @@
   replace:
     path: /etc/docker/daemon.json
     regexp: '\{\}'
-    replace: '{\n\t"insecure-registries" : ["https://localhost:81","localhost:81"]\n}'
+    replace: '{\n\t"insecure-registries" : ["https://{{ kick_srvr }}:81","{{ kick_srvr }}:81"]\n}'
 
 - name: "Restart Docker"
   systemd:
@@ -47,7 +47,7 @@
 - name: "Download Harbor {{ harbor_ver }} build"
   unarchive:
     src: "http://localhost/offlinerepo/harbor-online-installer-v{{ harbor_ver }}.tgz"
-    dest: "{{ rocknsm_dir }}harbor"
+    dest: "{{ harbor_dir }}"
     mode: 0740
     remote_src: true
 
@@ -61,25 +61,25 @@
   block:
    - name: 'Set up harbor.cfg'
      replace:
-        path: "{{ rocknsm_dir }}harbor/harbor/harbor.cfg"
+        path: "{{ harbor_dir }}/harbor/harbor.cfg"
         regexp: '(\s+)hostname = reg\.mydomain\.com(\s+.*)?$'
-        replace: '\1hostname = localhost:{{ harbor_firewall_port }}\2'
+        replace: '\1hostname = {{ kick_srvr }}:{{ harbor_firewall_port }}\2'
    - replace:
-        path: "{{ rocknsm_dir }}harbor/harbor/harbor.cfg"
+        path: "{{ harbor_dir }}/harbor/harbor.cfg"
         regexp: '(\s+)db_password = root123(\s+.*)?$'
         replace: '\1db_password = password\2'
    - replace:
-        path: "{{ rocknsm_dir }}harbor/harbor/harbor.cfg"
+        path: "{{ harbor_dir }}/harbor/harbor.cfg"
         regexp: '(\s+)harbor_admin_password = Harbor12345(\s+.*)?$'
         replace: '\1harbor_admin_password = password\2'
    - replace:
-        path: "{{ rocknsm_dir }}harbor/harbor/harbor.cfg"
+        path: "{{ harbor_dir }}/harbor/harbor.cfg"
         regexp: '(\s+)hostname = localhost:81(\s+.*)?$'
-        replace: '\1hostname = ansiblecontroller:81\2'
+        replace: '\1hostname = "{{ kick_srvr }}":81\2'
 
 - name: 'Fix Harbor docker-compose file'
   replace:
-    path: "{{ rocknsm_dir }}harbor/harbor/docker-compose.yml"
+    path: "{{ harbor_dir }}/harbor/docker-compose.yml"
     regexp: '80:80'
     replace: '{{ harbor_firewall_port }}:{{ harbor_port }}'
 
@@ -96,7 +96,7 @@
 #  when: 'service_status.stat.exists'
 
 - name: 'Install Harbor'
-  shell: "sh {{ rocknsm_dir }}harbor/harbor/install.sh"
+  shell: "sh {{ harbor_dir }}/harbor/install.sh"
 
 - name: 'Install Harbor service file'
   template:
@@ -116,7 +116,7 @@
 
 - name: 'Wait for harbor to come up'
   uri:
-    url: http://localhost:81
+    url: http://{{ kick_srvr }}:81
   register: harborwebresult
   until: harborwebresult.status == 200
   retries: 15
@@ -132,17 +132,17 @@
   docker_login:
     username: admin
     password: password
-    registry_url: http://localhost:81
+    registry_url: http://{{ kick_srvr }}:81
     timeout: 20
 
 - name: 'Tag local images for upload to harbor'
-  shell: "docker tag {{ item }} localhost:81/library/{{ item[item.rfind('/')+1:] }}"
+  shell: "docker tag {{ item }} {{ kick_srvr }}:81/library/{{ item[item.rfind('/')+1:] }}"
   with_items:
     - "{{harbor_docker_images}}"
 
 - name: 'Upload local images to harbor'
   docker_image:
-    name: "localhost:81/library/{{ item[item.rfind('/')+1:] }}"
+    name: "{{ kick_srvr }}:81/library/{{ item[item.rfind('/')+1:] }}"
     push: yes
     pull: no
   with_items:

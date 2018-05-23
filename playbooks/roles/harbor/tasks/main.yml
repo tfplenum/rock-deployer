@@ -72,6 +72,10 @@
         path: "{{ rocknsm_dir }}harbor/harbor/harbor.cfg"
         regexp: '(\s+)harbor_admin_password = Harbor12345(\s+.*)?$'
         replace: '\1harbor_admin_password = password\2'
+   - replace:
+        path: "{{ rocknsm_dir }}harbor/harbor/harbor.cfg"
+        regexp: '(\s+)hostname = localhost:81(\s+.*)?$'
+        replace: '\1hostname = ansiblecontroller:81\2'
 
 - name: 'Fix Harbor docker-compose file'
   replace:
